@@ -1,0 +1,3 @@
+# filepath: /Users/tommy/repos/oci/ansible/master.yml
+- import_playbook: playbook.yml
+- import_playbook: ufw.yml

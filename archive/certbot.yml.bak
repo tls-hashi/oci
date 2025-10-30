@@ -1,0 +1,34 @@
+- name: Ensure certbot webroot exists
+  file:
+    path: /var/www/certbot
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+  become: true
+
+- name: Ensure /etc/letsencrypt directory exists
+  file:
+    path: /etc/letsencrypt
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+  become: true
+
+- name: Install certbot
+  apt:
+    name: certbot
+    state: present
+    update_cache: true
+  become: true
+
+- name: Obtain certificates from Let's Encrypt
+  command: >
+    certbot certonly --non-interactive --webroot -w /var/www/certbot
+    --agree-tos --no-eff-email
+    --email tlsoob+oci@pm.me
+    -d 2two2.me -d media.2two2.me -d git.2two2.me
+  args:
+    creates: "/etc/letsencrypt/live/2two2.me/fullchain.pem"
+  become: true

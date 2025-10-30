@@ -1,0 +1,8 @@
+- name: Retrieve Terraform outputs as JSON
+  command: terraform output -json
+  delegate_to: localhost
+  register: tf_output_raw
+
+- name: Set management IP fact from Terraform output
+  set_fact:
+    mgmt_ip: "{{ (tf_output_raw.stdout | from_json)['mgmt_private_ip']['value'] }}"
