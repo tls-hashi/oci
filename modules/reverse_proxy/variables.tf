@@ -1,44 +1,34 @@
-variable "public_subnet_id" {
-  description = "OCID of the public subnet"
-  type        = string
-}
-
-variable "private_subnet_id" {
-  description = "OCID of the private subnet"
-  type        = string
-}
-
 variable "compartment_ocid" {
-  description = "OCID of the compartment"
   type        = string
+  description = "OCID of the OCI compartment"
 }
 
 variable "availability_domain" {
-  description = "Availability domain to deploy into"
   type        = string
+  description = "Availability domain for the instance"
 }
 
 variable "image_id" {
-  description = "OCID of the image to use"
   type        = string
-}
-
-variable "ssh_public_key_path" {
-  description = "Path to the SSH public key file"
-  type        = string
-}
-
-variable "ssh_private_key_path" {
-  description = "Path to the SSH private key file"
-  type        = string
+  description = "OCID of the OS image to use"
 }
 
 variable "vcn_ocid" {
-  description = "The OCID of the VCN"
   type        = string
+  description = "OCID of the Virtual Cloud Network"
 }
 
 variable "firewall_nsg_id" {
-  description = "NSG to attach to the reverse proxy instance"
   type        = string
+  description = "OCID of the firewall Network Security Group"
+}
+
+variable "public_subnet_id" {
+  type        = string
+  description = "OCID of the public subnet"
+}
+
+variable "private_subnet_id" {
+  type        = string
+  description = "OCID of the private subnet"
 }

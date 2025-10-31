@@ -1,193 +1,127 @@
-// ---------------------------
-// VCN and Subnets
-// ---------------------------
+# Virtual Cloud Network and Subnets
+# Access to instances managed via HashiCorp Boundary (SSH removed)
 
 resource "oci_core_virtual_network" "default_vcn" {
-  cidr_block     = "10.0.0.0/16"
+  cidr_block     = var.vcn_cidr
   compartment_id = var.compartment_ocid
-  display_name   = "twotwotwo-vcn"
-  dns_label      = "twotwotwo"
+  display_name   = "${var.naming_prefix}-vcn"
+  dns_label      = var.naming_prefix
+
+  freeform_tags = merge(
+    var.tags,
+    {
+      Name        = "${var.naming_prefix}-vcn"
+      Environment = var.environment
+    }
+  )
 }
 
 resource "oci_core_subnet" "public_subnet" {
-  cidr_block     = "10.0.1.0/24"
+  cidr_block     = var.public_subnet_cidr
   compartment_id = var.compartment_ocid
   vcn_id         = oci_core_virtual_network.default_vcn.id
-  display_name   = "twotwotwo-public-subnet"
+  display_name   = "${var.naming_prefix}-public-subnet"
   dns_label      = "public"
   route_table_id = oci_core_route_table.public_rt.id
+
+  freeform_tags = merge(
+    var.tags,
+    {
+      Name        = "${var.naming_prefix}-public-subnet"
+      Environment = var.environment
+      Type        = "public"
+    }
+  )
 }
 
 resource "oci_core_subnet" "private_subnet" {
-  cidr_block                  = "10.0.2.0/24"
-  compartment_id              = var.compartment_ocid
-  vcn_id                      = oci_core_virtual_network.default_vcn.id
-  display_name                = "twotwotwo-private-subnet"
+  cidr_block                 = var.private_subnet_cidr
+  compartment_id             = var.compartment_ocid
+  vcn_id                     = oci_core_virtual_network.default_vcn.id
+  display_name               = "${var.naming_prefix}-private-subnet"
   prohibit_public_ip_on_vnic = true
-  dns_label                   = "private"
-  route_table_id              = oci_core_route_table.private_rt.id
+  dns_label                  = "private"
+  route_table_id             = oci_core_route_table.private_rt.id
+
+  freeform_tags = merge(
+    var.tags,
+    {
+      Name        = "${var.naming_prefix}-private-subnet"
+      Environment = var.environment
+      Type        = "private"
+    }
+  )
 }
 
-// ---------------------------
-// Gateways and Route Tables
-// ---------------------------
-
+# Internet Gateway for public subnet
 resource "oci_core_internet_gateway" "igw" {
   compartment_id = var.compartment_ocid
   vcn_id         = oci_core_virtual_network.default_vcn.id
-  display_name   = "twotwotwo-igw"
+  display_name   = "${var.naming_prefix}-igw"
+  enabled        = true
+
+  freeform_tags = merge(
+    var.tags,
+    {
+      Name        = "${var.naming_prefix}-igw"
+      Environment = var.environment
+    }
+  )
 }
 
+# Public route table - routes to Internet Gateway
 resource "oci_core_route_table" "public_rt" {
   compartment_id = var.compartment_ocid
   vcn_id         = oci_core_virtual_network.default_vcn.id
-  display_name   = "twotwotwo-public-rt"
+  display_name   = "${var.naming_prefix}-public-rt"
 
   route_rules {
     destination       = "0.0.0.0/0"
     destination_type  = "CIDR_BLOCK"
     network_entity_id = oci_core_internet_gateway.igw.id
   }
+
+  freeform_tags = merge(
+    var.tags,
+    {
+      Name        = "${var.naming_prefix}-public-rt"
+      Environment = var.environment
+    }
+  )
 }
 
+# NAT Gateway for private subnet outbound traffic
 resource "oci_core_nat_gateway" "nat" {
   compartment_id = var.compartment_ocid
   vcn_id         = oci_core_virtual_network.default_vcn.id
-  display_name   = "222-gateway"
+  display_name   = "${var.naming_prefix}-nat-gateway"
+
+  freeform_tags = merge(
+    var.tags,
+    {
+      Name        = "${var.naming_prefix}-nat-gateway"
+      Environment = var.environment
+    }
+  )
 }
 
+# Private route table - routes to NAT Gateway
 resource "oci_core_route_table" "private_rt" {
   compartment_id = var.compartment_ocid
   vcn_id         = oci_core_virtual_network.default_vcn.id
-  display_name   = "222-private-route-table"
+  display_name   = "${var.naming_prefix}-private-rt"
 
   route_rules {
     destination       = "0.0.0.0/0"
     destination_type  = "CIDR_BLOCK"
     network_entity_id = oci_core_nat_gateway.nat.id
   }
+
+  freeform_tags = merge(
+    var.tags,
+    {
+      Name        = "${var.naming_prefix}-private-rt"
+      Environment = var.environment
+    }
+  )
 }
-
-# // ---------------------------
-# // NSGs
-# // ---------------------------
-
-# resource "oci_core_network_security_group" "internal_comms" {
-#   compartment_id = var.compartment_ocid
-#   vcn_id         = oci_core_virtual_network.default_vcn.id
-#   display_name   = "InternalComms"
-# }
-
-# resource "oci_core_network_security_group" "firewall_nsg" {
-#   compartment_id = var.compartment_ocid
-#   vcn_id         = oci_core_virtual_network.default_vcn.id
-#   display_name   = "firewall-nsg"
-
-#   lifecycle {
-#     prevent_destroy = true
-#   }
-# }
-
-# // ---------------------------
-# // InternalComms NSG Rules
-# // ---------------------------
-
-
-# resource "oci_core_network_security_group_security_rule" "internal_all_egress" {
-#   network_security_group_id = oci_core_network_security_group.internal_comms.id
-#   direction                 = "EGRESS"
-#   protocol                  = "all"
-#   destination_type          = "NETWORK_SECURITY_GROUP"
-#   destination               = oci_core_network_security_group.internal_comms.id
-#   description               = "Allow all outbound traffic to InternalComms"
-#   stateless                 = false
-# }
-
-# resource "oci_core_network_security_group_security_rule" "internal_tcp_3000_ingress" {
-#   network_security_group_id = oci_core_network_security_group.internal_comms.id
-#   direction                 = "INGRESS"
-#   protocol                  = "6"
-#   source_type               = "CIDR_BLOCK"
-#   source                    = "10.0.0.0/16"
-#   tcp_options {
-#     destination_port_range {
-#       min = 3000
-#       max = 3000
-#     }
-#   }
-#   description = "Allow internal TCP port 3000 ingress"
-#   stateless   = false
-# }
-
-
-# // ---------------------------
-# // Firewall NSG Rules
-# // ---------------------------
-
-# resource "oci_core_network_security_group_security_rule" "http_ingress" {
-#   network_security_group_id = oci_core_network_security_group.firewall_nsg.id
-#   direction                 = "INGRESS"
-#   protocol                  = "6"
-#   source                    = "0.0.0.0/0"
-#   tcp_options {
-#     destination_port_range {
-#       min = 80
-#       max = 80
-#     }
-#   }
-#   description = "Allow HTTP inbound"
-#   stateless   = false
-# }
-
-# resource "oci_core_network_security_group_security_rule" "https_ingress" {
-#   network_security_group_id = oci_core_network_security_group.firewall_nsg.id
-#   direction                 = "INGRESS"
-#   protocol                  = "6"
-#   source                    = "0.0.0.0/0"
-#   tcp_options {
-#     destination_port_range {
-#       min = 443
-#       max = 443
-#     }
-#   }
-#   description = "Allow HTTPS inbound"
-#   stateless   = false
-# }
-
-# resource "oci_core_network_security_group_security_rule" "ssh_ingress" {
-#   network_security_group_id = oci_core_network_security_group.firewall_nsg.id
-#   direction                 = "INGRESS"
-#   protocol                  = "6"
-#   source                    = "0.0.0.0/0"
-#   tcp_options {
-#     destination_port_range {
-#       min = 22
-#       max = 22
-#     }
-#   }
-#   description = "Allow SSH inbound"
-#   stateless   = false
-# }
-
-# resource "oci_core_network_security_group_security_rule" "internal_tcp_3000_egress" {
-#   network_security_group_id = oci_core_network_security_group.firewall_nsg.id
-#   direction                 = "EGRESS"
-#   protocol                  = "6"
-#   destination_type          = "CIDR_BLOCK"
-#   destination               = "10.0.0.0/16"
-#   tcp_options {
-#     destination_port_range {
-#       min = 3000
-#       max = 3000
-#     }
-#   }
-#   stateless = false
-
-#   lifecycle {
-#     ignore_changes = [
-#       // For example, if the API omits a field on read that was set on creation,
-#       // list that attribute here.
-#       tcp_options[0].destination_port_range
-#     ]
-#   }
-# }

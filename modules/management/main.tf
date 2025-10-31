@@ -1,7 +1,5 @@
-provider "google" {
-  project = var.project_id
-  region  = var.region
-}
+# Management instance in private subnet
+# Access will be provided via HashiCorp Boundary (future implementation)
 
 resource "oci_core_instance" "management" {
   availability_domain = var.availability_domain
@@ -27,35 +25,18 @@ resource "oci_core_instance" "management" {
   }
 
   metadata = {
-    ssh_authorized_keys = file(var.ssh_public_key_path)
-    hostname_label      = "mgmt"
+    hostname_label = "mgmt"
   }
 
   agent_config {
-    is_management_disabled  = false
-    is_monitoring_disabled  = false
-
-    plugins_config {
-      name          = "Bastion"
-      desired_state = "ENABLED"
-    }
+    is_management_disabled = false
+    is_monitoring_disabled = false
   }
 
-  connection {
-    type                = "ssh"
-    host                = self.private_ip
-    user                = "ubuntu"
-    private_key         = file(var.ssh_private_key_path)
-    timeout             = "5m"
-
-    bastion_host        = var.bastion_host
-    bastion_user        = "ubuntu"
-    bastion_private_key = file(var.ssh_private_key_path)
-  }
-
-  provisioner "file" {
-    source      = var.ssh_private_key_path
-    destination = "/home/ubuntu/.ssh/id_rsa"
+  lifecycle {
+    ignore_changes = [
+      metadata,
+    ]
   }
 }
 
@@ -64,30 +45,6 @@ data "oci_core_vnic_attachments" "management_vnics" {
   instance_id    = oci_core_instance.management.id
 }
 
-// Use the primary VNIC
 data "oci_core_vnic" "management_vnic" {
   vnic_id = data.oci_core_vnic_attachments.management_vnics.vnic_attachments[0].vnic_id
 }
-
-resource "google_compute_instance" "reverse_proxy" {
-  name         = "reverse-proxy"
-  machine_type = "e2-micro"
-  zone         = var.zone
-
-  boot_disk {
-    initialize_params {
-      image = "debian-cloud/debian-12"
-    }
-  }
-
-  network_interface {
-    network    = google_compute_network.vpc.name
-    subnetwork = google_compute_subnetwork.subnet.name
-    access_config {}
-  }
-
-  metadata = {
-    ssh-keys = "ubuntu:${file(var.ssh_public_key_path)}"
-  }
-}
-

@@ -1,28 +1,19 @@
 variable "compartment_ocid" {
-  type = string
+  type        = string
+  description = "OCID of the OCI compartment"
 }
 
 variable "availability_domain" {
-  type = string
+  type        = string
+  description = "Availability domain for the instance"
 }
 
 variable "image_id" {
-  type = string
+  type        = string
+  description = "OCID of the OS image to use"
 }
 
 variable "private_subnet_id" {
-  type = string
-}
-
-variable "ssh_public_key_path" {
-  type = string
-}
-
-variable "ssh_private_key_path" {
-  type = string
-}
-
-variable "bastion_host" {
   type        = string
-  description = "Public IP address of the bastion (reverse_proxy) host."
+  description = "OCID of the private subnet"
 }

@@ -1,3 +1,6 @@
+# Reverse proxy instance in public subnet
+# Access will be provided via HashiCorp Boundary (future implementation)
+
 resource "oci_core_instance" "reverse_proxy" {
   availability_domain = var.availability_domain
   compartment_id      = var.compartment_ocid
@@ -18,37 +21,23 @@ resource "oci_core_instance" "reverse_proxy" {
     subnet_id        = var.public_subnet_id
     assign_public_ip = true
     display_name     = "twotwotwo-reverse-proxy-public-vnic"
-    nsg_ids          = [oci_core_network_security_group.firewall_nsg.id]   # Use the public firewall NSG
+    nsg_ids          = [oci_core_network_security_group.firewall_nsg.id]
   }
 
   metadata = {
-    ssh_authorized_keys = file(var.ssh_public_key_path)
-    hostname_label      = "jellybean"
+    hostname_label = "jellybean"
   }
 
   agent_config {
     is_management_disabled = false
     is_monitoring_disabled = false
-
-    plugins_config {
-      name          = "Bastion"
-      desired_state = "ENABLED"
-    }
   }
 
-  connection {
-    type        = "ssh"
-    user        = "ubuntu"
-    host        = self.public_ip
-    private_key = file(var.ssh_private_key_path)
-    timeout     = "2m"
+  lifecycle {
+    ignore_changes = [
+      metadata,
+    ]
   }
-
-  provisioner "file" {
-    source      = var.ssh_private_key_path
-    destination = "/home/ubuntu/.ssh/id_rsa"
-  }
-
 }
 
 resource "oci_core_vnic_attachment" "private_vnic" {

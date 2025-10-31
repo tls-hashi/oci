@@ -1,0 +1,55 @@
+# OCI Authentication Configuration
+# Copy this file to terraform.tfvars and fill in your values
+# OR set these as variables in your HCP Terraform workspace (RECOMMENDED)
+
+# IMPORTANT: In HCP Terraform, set these as SENSITIVE variables
+# DO NOT commit actual values to version control
+
+# OCI Tenancy OCID
+# Find in OCI Console: Identity > Tenancy Information
+tenancy_ocid = "ocid1.tenancy.oc1..aaaaaaaxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+
+# OCI User OCID
+# Find in OCI Console: Identity > Users > Your User
+user_ocid = "ocid1.user.oc1..aaaaaaaxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+
+# OCI API Key Fingerprint
+# Find in OCI Console: Identity > Users > Your User > API Keys
+fingerprint = "aa:bb:cc:dd:ee:ff:00:11:22:33:44:55:66:77:88:99"
+
+# OCI API Private Key Content (NOT the file path)
+# Copy the ENTIRE contents of your private key file here as a multi-line string
+# In HCP Terraform, paste the entire key content as a sensitive variable
+private_key = <<-EOT
+-----BEGIN RSA PRIVATE KEY-----
+Your private key content here...
+-----END RSA PRIVATE KEY-----
+EOT
+
+# OCI Compartment OCID
+# Find in OCI Console: Identity > Compartments
+compartment_ocid = "ocid1.compartment.oc1..aaaaaaaxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+
+# OCI Region
+# Examples: us-phoenix-1, us-ashburn-1, eu-frankfurt-1
+region = "us-phoenix-1"
+
+# Network Configuration (optional - defaults provided)
+# vcn_cidr           = "10.0.0.0/16"
+# public_subnet_cidr = "10.0.1.0/24"
+# private_subnet_cidr = "10.0.2.0/24"
+
+# Resource Naming (optional - defaults provided)
+# naming_prefix = "twotwotwo"
+# environment   = "prod"
+
+# DNS Configuration (optional - defaults provided)
+# dns_zone_name = "2two2.me"
+
+# Custom Tags (optional)
+# tags = {
+#   ManagedBy = "Terraform"
+#   Platform  = "HCP-Terraform"
+#   Project   = "OCI-Infrastructure"
+#   Owner     = "Your-Name"
+# }
