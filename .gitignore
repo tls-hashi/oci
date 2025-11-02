@@ -26,3 +26,6 @@ terraform.rc
 # Ignore all files in the archive directory
 
 siteinfo.md
+
+# Embedded git repositories
+2two2.me/
