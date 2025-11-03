@@ -1,28 +1,16 @@
-# Local .terraform directories
+# Terraform
 .terraform/
-
-# Terraform state files
+.terraform.lock.hcl
 *.tfstate
-*.tfstate.backup
-
-# Crash logs
-crash.log
-
-# Terraform variable files containing secrets
+*.tfstate.*
 *.tfvars
-*.tfvars.json
-
-# CLI configuration
+crash.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
 .terraformrc
 terraform.rc
 
-# VS Code settings
-.vscode/
-
-# Sensitive files
-*.pem
-
-./archive
-# Ignore all files in the archive directory
-
-siteinfo.md
+# OS
+.DS_Store
