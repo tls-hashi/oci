@@ -10,7 +10,6 @@
 **Changed in:** `main.tf`
 
 ```hcl
-# Added:
 provider "oci" {
   tenancy_ocid = local.tenancy_ocid
   user_ocid    = local.user_ocid
@@ -35,7 +34,46 @@ provider "vault" {
 }
 ```
 
-### Issue 3: Region Variable Declaration
+### Issue 3: Deprecated Data Source Warning
+**Problem:** The `data "vault_kv_secret_v2"` resource shows a deprecation warning.
+
+**Decision:** Continue using the data source (not ephemeral) because:
+- Ephemeral resources cannot be used for values that must be stored in Terraform state
+- Values like `compartment_ocid` are used in resources and must persist in state
+- The deprecation is only a warning; the data source still works correctly
+- The "ephemeral" resource is only suitable for write-only values like passwords
+
+**Why ephemeral doesn't work:**
+When attempted, you get errors like:
+```
+Error: Invalid use of ephemeral value
+Ephemeral values are not valid for "compartment_ocid", because it is not a 
+write-only attribute and must be persisted to state.
+```
+
+**Current configuration in** `vault.tf`:
+```hcl
+data "vault_kv_secret_v2" "oci" {
+  mount = "oci"
+  name  = "terraform"
+}
+
+locals {
+  oci_creds = data.vault_kv_secret_v2.oci.data
+  # ... credentials extracted here
+}
+```
+
+The deprecation warning can be safely ignored for this use case.
+
+### Issue 4: Duplicate OCI Provider in Lock File
+**Problem:** Both `hashicorp/oci` and `oracle/oci` were present in `.terraform.lock.hcl` (same provider, different registry paths).
+
+**Fix:** Removed the legacy `hashicorp/oci` entry, keeping only `oracle/oci`.
+
+**Changed in:** `.terraform.lock.hcl`
+
+### Issue 5: Region Variable Declaration
 **Problem:** The `region` variable was commented out in `variables.tf`, but `terraform.tfvars.example` still referenced it, causing a warning.
 
 **Fix:** Removed `region` from the example tfvars file since it's now sourced from Vault via `local.region`.

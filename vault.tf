@@ -18,6 +18,8 @@ provider "vault" {
 }
 
 # Fetch OCI credentials from Vault KV v2 secrets engine
+# Note: Using data source (not ephemeral) because these values need to be stored in state
+# Ephemeral resources cannot be used for values that must persist in state
 data "vault_kv_secret_v2" "oci" {
   mount = "oci"       # KV v2 mount path
   name  = "terraform" # Secret name under the mount
