@@ -48,6 +48,6 @@ output "web_url" {
 
 # Image output
 output "ubuntu_image_name" {
-  description = "Name of the Ubuntu ARM image used"
-  value       = data.oci_core_images.ubuntu_arm.images[0].display_name
+  description = "Name of the Ubuntu image used"
+  value       = data.oci_core_images.ubuntu_x86.images[0].display_name
 }
