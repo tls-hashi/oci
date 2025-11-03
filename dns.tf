@@ -2,7 +2,7 @@
 # Dynamic IP addresses from Terraform outputs
 
 resource "oci_dns_zone" "main_zone" {
-  compartment_id = var.compartment_ocid
+  compartment_id = local.compartment_ocid
   name           = var.dns_zone_name
   zone_type      = "PRIMARY"
 

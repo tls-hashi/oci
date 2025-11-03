@@ -13,26 +13,30 @@ terraform {
       source  = "oracle/oci"
       version = ">= 5.0.0"
     }
+    vault = {
+      source  = "hashicorp/vault"
+      version = "~> 4.0"
+    }
   }
   required_version = ">= 1.5.0"
 }
 
 provider "oci" {
-  tenancy_ocid = var.tenancy_ocid
-  user_ocid    = var.user_ocid
-  fingerprint  = var.fingerprint
-  private_key  = var.private_key
-  region       = var.region
+  tenancy_ocid = local.tenancy_ocid
+  user_ocid    = local.user_ocid
+  fingerprint  = local.fingerprint
+  private_key  = local.private_key
+  region       = local.region
 }
 
 
 # Data sources
 data "oci_identity_availability_domains" "ads" {
-  compartment_id = var.compartment_ocid
+  compartment_id = local.compartment_ocid
 }
 
 data "oci_core_images" "ubuntu_image" {
-  compartment_id           = var.compartment_ocid
+  compartment_id           = local.compartment_ocid
   operating_system         = "Canonical Ubuntu"
   operating_system_version = "24.04"
   shape                    = "VM.Standard.A1.Flex"
@@ -41,7 +45,7 @@ data "oci_core_images" "ubuntu_image" {
 }
 
 data "oci_core_images" "oracle_linux_image" {
-  compartment_id           = var.compartment_ocid
+  compartment_id           = local.compartment_ocid
   operating_system         = "Oracle Linux"
   operating_system_version = "8"
   shape                    = "VM.Standard.A1.Flex"
@@ -53,7 +57,7 @@ data "oci_core_images" "oracle_linux_image" {
 module "reverse_proxy" {
   source = "./modules/reverse_proxy"
 
-  compartment_ocid    = var.compartment_ocid
+  compartment_ocid    = local.compartment_ocid
   availability_domain = data.oci_identity_availability_domains.ads.availability_domains[0].name
   image_id            = data.oci_core_images.oracle_linux_image.images[0].id
   vcn_ocid            = oci_core_virtual_network.default_vcn.id
@@ -65,7 +69,7 @@ module "reverse_proxy" {
 module "management" {
   source = "./modules/management"
 
-  compartment_ocid    = var.compartment_ocid
+  compartment_ocid    = local.compartment_ocid
   availability_domain = data.oci_identity_availability_domains.ads.availability_domains[0].name
   private_subnet_id   = oci_core_subnet.private_subnet.id
   image_id            = data.oci_core_images.ubuntu_image.images[0].id

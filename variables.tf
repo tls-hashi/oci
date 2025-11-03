@@ -1,45 +1,47 @@
 # OCI Authentication Variables
-# These should be set as sensitive variables in HCP Terraform workspace
+# These are retrieved from HCP Vault via dynamic credentials
+# Credentials are stored in Vault at: oci/terraform
+# See vault.tf for configuration details
 
-variable "tenancy_ocid" {
-  type        = string
-  description = "OCID of the OCI tenancy"
-  sensitive   = true
-}
+# variable "tenancy_ocid" {
+#   type        = string
+#   description = "OCID of the OCI tenancy"
+#   sensitive   = true
+# }
 
-variable "user_ocid" {
-  type        = string
-  description = "OCID of the OCI user"
-  sensitive   = true
-}
+# variable "user_ocid" {
+#   type        = string
+#   description = "OCID of the OCI user"
+#   sensitive   = true
+# }
 
-variable "fingerprint" {
-  type        = string
-  description = "Fingerprint of the OCI API key"
-  sensitive   = true
-}
+# variable "fingerprint" {
+#   type        = string
+#   description = "Fingerprint of the OCI API key"
+#   sensitive   = true
+# }
 
-variable "private_key" {
-  type        = string
-  description = "Contents of the OCI API private key (not the file path)"
-  sensitive   = true
-}
+# variable "private_key" {
+#   type        = string
+#   description = "Contents of the OCI API private key (not the file path)"
+#   sensitive   = true
+# }
 
-variable "compartment_ocid" {
-  type        = string
-  description = "OCID of the OCI compartment where resources will be created"
-}
+# variable "compartment_ocid" {
+#   type        = string
+#   description = "OCID of the OCI compartment where resources will be created"
+# }
 
-variable "region" {
-  type        = string
-  description = "OCI region where resources will be deployed"
-  default     = "us-phoenix-1"
+# variable "region" {
+#   type        = string
+#   description = "OCI region where resources will be deployed"
+#   default     = "us-phoenix-1"
 
-  validation {
-    condition     = can(regex("^[a-z]+-[a-z]+-[0-9]+$", var.region))
-    error_message = "Region must be a valid OCI region identifier (e.g., us-phoenix-1)."
-  }
-}
+#   validation {
+#     condition     = can(regex("^[a-z]+-[a-z]+-[0-9]+$", var.region))
+#     error_message = "Region must be a valid OCI region identifier (e.g., us-phoenix-1)."
+#   }
+# }
 
 # Network Configuration Variables
 

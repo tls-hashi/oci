@@ -3,7 +3,7 @@
 
 resource "oci_core_virtual_network" "default_vcn" {
   cidr_block     = var.vcn_cidr
-  compartment_id = var.compartment_ocid
+  compartment_id = local.compartment_ocid
   display_name   = "${var.naming_prefix}-vcn"
   dns_label      = var.naming_prefix
 
@@ -18,7 +18,7 @@ resource "oci_core_virtual_network" "default_vcn" {
 
 resource "oci_core_subnet" "public_subnet" {
   cidr_block     = var.public_subnet_cidr
-  compartment_id = var.compartment_ocid
+  compartment_id = local.compartment_ocid
   vcn_id         = oci_core_virtual_network.default_vcn.id
   display_name   = "${var.naming_prefix}-public-subnet"
   dns_label      = "public"
@@ -36,7 +36,7 @@ resource "oci_core_subnet" "public_subnet" {
 
 resource "oci_core_subnet" "private_subnet" {
   cidr_block                 = var.private_subnet_cidr
-  compartment_id             = var.compartment_ocid
+  compartment_id             = local.compartment_ocid
   vcn_id                     = oci_core_virtual_network.default_vcn.id
   display_name               = "${var.naming_prefix}-private-subnet"
   prohibit_public_ip_on_vnic = true
@@ -55,7 +55,7 @@ resource "oci_core_subnet" "private_subnet" {
 
 # Internet Gateway for public subnet
 resource "oci_core_internet_gateway" "igw" {
-  compartment_id = var.compartment_ocid
+  compartment_id = local.compartment_ocid
   vcn_id         = oci_core_virtual_network.default_vcn.id
   display_name   = "${var.naming_prefix}-igw"
   enabled        = true
@@ -71,7 +71,7 @@ resource "oci_core_internet_gateway" "igw" {
 
 # Public route table - routes to Internet Gateway
 resource "oci_core_route_table" "public_rt" {
-  compartment_id = var.compartment_ocid
+  compartment_id = local.compartment_ocid
   vcn_id         = oci_core_virtual_network.default_vcn.id
   display_name   = "${var.naming_prefix}-public-rt"
 
@@ -92,7 +92,7 @@ resource "oci_core_route_table" "public_rt" {
 
 # NAT Gateway for private subnet outbound traffic
 resource "oci_core_nat_gateway" "nat" {
-  compartment_id = var.compartment_ocid
+  compartment_id = local.compartment_ocid
   vcn_id         = oci_core_virtual_network.default_vcn.id
   display_name   = "${var.naming_prefix}-nat-gateway"
 
@@ -107,7 +107,7 @@ resource "oci_core_nat_gateway" "nat" {
 
 # Private route table - routes to NAT Gateway
 resource "oci_core_route_table" "private_rt" {
-  compartment_id = var.compartment_ocid
+  compartment_id = local.compartment_ocid
   vcn_id         = oci_core_virtual_network.default_vcn.id
   display_name   = "${var.naming_prefix}-private-rt"
 
