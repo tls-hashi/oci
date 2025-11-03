@@ -1,13 +1,10 @@
-# Vault provider configuration for HCP Vault
+# Vault provider configuration for HCP Terraform dynamic credentials
 provider "vault" {
-  # Address and namespace must be set explicitly
-  address   = "https://tls-hashi-kv-public-vault-1caeb7d2.31341725.z1.hashicorp.cloud:8200"
-  namespace = "admin"
-  
-  # The token is automatically injected by HCP Terraform's dynamic credentials via:
-  # - TFC_VAULT_RUN_ROLE (env var)
-  # - vault_backed_dynamic_credentials = true (terraform var)
-  # Do NOT set 'token' here
+  # Leave EMPTY for HCP Terraform dynamic credentials!
+  # HCP Terraform automatically injects via environment variables:
+  # - VAULT_ADDR (from TFC_VAULT_ADDR)
+  # - VAULT_NAMESPACE (from TFC_VAULT_NAMESPACE)
+  # - VAULT_TOKEN (generated via TFC_VAULT_RUN_ROLE)
 }
 
 # Fetch OCI credentials from Vault

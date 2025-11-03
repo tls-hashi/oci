@@ -15,19 +15,12 @@ Add these **Environment Variables** (NOT Terraform variables):
 
 | Key | Value | Sensitive |
 |-----|-------|-----------|
+| `TFC_VAULT_PROVIDER_AUTH` | `true` | No |
 | `TFC_VAULT_ADDR` | `https://tls-hashi-kv-public-vault-1caeb7d2.31341725.z1.hashicorp.cloud:8200` | No |
 | `TFC_VAULT_NAMESPACE` | `admin` | No |
 | `TFC_VAULT_RUN_ROLE` | `terraform-oci` | No |
 
-### Step 3: Enable Dynamic Credentials
-
-Add this **Terraform Variable**:
-
-| Key | Value | HCL | Sensitive |
-|-----|-------|-----|-----------|
-| `vault_backed_dynamic_credentials` | `true` | ✓ Yes | No |
-
-**Important:** Make sure to check the "HCL" checkbox for this variable.
+**Important:** All four variables must be **Environment Variables**, not Terraform variables.
 
 ### Alternative: Use a Variable Set (Recommended for Multiple Workspaces)
 
