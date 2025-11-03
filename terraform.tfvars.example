@@ -30,9 +30,9 @@ EOT
 # Find in OCI Console: Identity > Compartments
 compartment_ocid = "ocid1.compartment.oc1..aaaaaaaxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 
-# OCI Region
-# Examples: us-phoenix-1, us-ashburn-1, eu-frankfurt-1
-region = "us-phoenix-1"
+# NOTE: region is retrieved from Vault and should NOT be set here
+# All OCI authentication variables (tenancy_ocid, user_ocid, fingerprint, 
+# private_key, compartment_ocid, region) are now managed via Vault
 
 # Network Configuration (optional - defaults provided)
 # vcn_cidr           = "10.0.0.0/16"

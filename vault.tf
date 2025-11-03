@@ -2,18 +2,14 @@
 # Uses HCP Terraform Dynamic Credentials for authentication
 
 provider "vault" {
-  # HCP Vault address
-  address   = "https://tls-hashi-kv-public-vault-1caeb7d2.31341725.z1.hashicorp.cloud:8200"
-  namespace = "admin"
-  
-  # Authentication is handled automatically by HCP Terraform Dynamic Credentials
-  # Configure this in HCP Terraform workspace:
-  # Settings > Variable sets > Create variable set for Vault dynamic credentials
-  # Or use workspace-level environment variables:
-  # TFC_VAULT_BACKED_DYNAMIC_CREDENTIALS = true
-  # TFC_VAULT_ADDR = <vault address>
-  # TFC_VAULT_NAMESPACE = admin
-  # TFC_VAULT_RUN_ROLE = <vault role for terraform runs>
+  # Configuration automatically provided by HCP Terraform Dynamic Credentials
+  # Do not set address, namespace, or token explicitly when using dynamic credentials
+  # 
+  # Required HCP Terraform workspace environment variables:
+  # - TFC_VAULT_BACKED_DYNAMIC_CREDENTIALS = true
+  # - TFC_VAULT_ADDR = https://tls-hashi-kv-public-vault-1caeb7d2.31341725.z1.hashicorp.cloud:8200
+  # - TFC_VAULT_NAMESPACE = admin
+  # - TFC_VAULT_RUN_ROLE = tfc-oci
 }
 
 # Fetch OCI credentials from Vault KV v2 secrets engine
