@@ -1,32 +1,32 @@
 # Vault provider configuration for HCP Vault
-# Uses HCP Terraform Dynamic Credentials for authentication
-
 provider "vault" {
-  # Configuration automatically provided by HCP Terraform Dynamic Credentials
-  # Do not set address, namespace, or token explicitly when using dynamic credentials
-  # 
-  # Required HCP Terraform workspace environment variables:
-  # - TFC_VAULT_BACKED_DYNAMIC_CREDENTIALS = true
-  # - TFC_VAULT_ADDR = https://tls-hashi-kv-public-vault-1caeb7d2.31341725.z1.hashicorp.cloud:8200
-  # - TFC_VAULT_NAMESPACE = admin
-  # - TFC_VAULT_RUN_ROLE = tfc-oci
+  address   = "https://tls-hashi-kv-public-vault-1caeb7d2.31341725.z1.hashicorp.cloud:8200"
+  namespace = "admin"
 }
 
 # Fetch OCI credentials from Vault KV v2 secrets engine
 data "vault_kv_secret_v2" "oci" {
-  mount = "oci"       # KV v2 mount path
-  name  = "terraform" # Secret name under the mount
+  mount = "oci"
+  name  = "terraform"
 }
 
-# Local values for easy reference throughout the configuration
+# Local values for easy reference
 locals {
   oci_creds = data.vault_kv_secret_v2.oci.data
   
-  # Extract OCI credentials
-  tenancy_ocid     = local.oci_creds.tenancy_ocid
-  user_ocid        = local.oci_creds.user_ocid
-  fingerprint      = local.oci_creds.fingerprint
-  private_key      = local.oci_creds.private_key
-  compartment_ocid = local.oci_creds.compartment_ocid
-  region           = local.oci_creds.region
+  tenancy_ocid     = local.oci_creds["tenancy_ocid"]
+  user_ocid        = local.oci_creds["user_ocid"]
+  fingerprint      = local.oci_creds["fingerprint"]
+  private_key      = local.oci_creds["private_key"]
+  compartment_ocid = local.oci_creds["compartment_ocid"]
+  region           = local.oci_creds["region"]
+}
+
+# Configure OCI provider
+provider "oci" {
+  tenancy_ocid = local.tenancy_ocid
+  user_ocid    = local.user_ocid
+  fingerprint  = local.fingerprint
+  private_key  = local.private_key
+  region       = local.region
 }
