@@ -43,13 +43,13 @@ resource "oci_core_instance" "main" {
   # Try AD-2 first (often has more capacity than AD-1)
   availability_domain = data.oci_identity_availability_domains.ads.availability_domains[2].name
   display_name        = "ubuntu-a1-instance"
-  shape               = "VM.Standard.E4.Flex"
+  shape               = "VM.Standard.E2.1.Micro"
 
   # Shape configuration for Flex shapes
   # Reduced to 2 OCPUs / 12GB RAM for better availability (still free tier)
   shape_config {
     ocpus         = 1
-    memory_in_gbs = 6
+    memory_in_gbs = 1
   }
 
   # Boot volume source
