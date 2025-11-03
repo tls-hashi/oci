@@ -21,15 +21,6 @@ terraform {
   required_version = ">= 1.5.0"
 }
 
-provider "oci" {
-  tenancy_ocid = local.tenancy_ocid
-  user_ocid    = local.user_ocid
-  fingerprint  = local.fingerprint
-  private_key  = local.private_key
-  region       = local.region
-}
-
-
 # Data sources
 data "oci_identity_availability_domains" "ads" {
   compartment_id = local.compartment_ocid
