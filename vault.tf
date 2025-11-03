@@ -1,16 +1,14 @@
-# Vault provider configuration for HCP Vault
 provider "vault" {
   address   = "https://tls-hashi-kv-public-vault-1caeb7d2.31341725.z1.hashicorp.cloud:8200"
   namespace = "admin"
+  # Token comes from VAULT_TOKEN environment variable
 }
 
-# Fetch OCI credentials from Vault KV v2 secrets engine
 data "vault_kv_secret_v2" "oci" {
   mount = "oci"
   name  = "terraform"
 }
 
-# Local values for easy reference
 locals {
   oci_creds = data.vault_kv_secret_v2.oci.data
   
@@ -22,7 +20,6 @@ locals {
   region           = local.oci_creds["region"]
 }
 
-# Configure OCI provider
 provider "oci" {
   tenancy_ocid = local.tenancy_ocid
   user_ocid    = local.user_ocid
