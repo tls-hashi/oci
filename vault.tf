@@ -27,3 +27,19 @@ provider "oci" {
   private_key  = local.private_key
   region       = local.region
 }
+
+# Add this to the end of vault.tf
+output "debug_vault_data" {
+  value = data.vault_kv_secret_v2.oci.data
+  sensitive = true
+}
+
+output "debug_tenancy_ocid" {
+  value = local.tenancy_ocid
+  sensitive = true
+}
+
+output "debug_user_ocid" {
+  value = local.user_ocid
+  sensitive = true
+}
