@@ -53,7 +53,7 @@ echo ""
 echo "Test 4: Private Key Format"
 echo "---------------------------"
 PRIVATE_KEY=$(echo "$SECRET_DATA" | jq -r '.data.data.private_key')
-if echo "$PRIVATE_KEY" | grep -q "BEGIN RSA PRIVATE KEY"; then
+if echo "$PRIVATE_KEY" | grep -qE "BEGIN (RSA )?PRIVATE KEY"; then
     echo "✓ Private key has correct format"
 else
     echo "✗ Private key format invalid"

@@ -90,7 +90,7 @@ vault write auth/jwt/role/tfc-oci \
   role_type="jwt" \
   bound_audiences="vault.workload.identity" \
   bound_claims_type="glob" \
-  bound_claims='{"sub":"organization:tls-hashi:project:*:workspace:OCI:run_phase:*"}' \
+  bound_claims="sub=organization:tls-hashi:project:*:workspace:OCI:run_phase:*" \
   user_claim="terraform_full_workspace" \
   policies="terraform-oci" \
   ttl="20m"
