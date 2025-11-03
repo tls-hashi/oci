@@ -13,9 +13,9 @@ data "oci_identity_availability_domains" "ads" {
   compartment_id = local.compartment_ocid
 }
 
-# Read SSH public key from local file
+# Retrieve SSH public key from Vault
 locals {
-  ssh_public_key = file("~/.ssh/id_rsa.pub")
+  ssh_public_key = local.oci_creds.ssh_public_key
 }
 
 # Cloud-init script to set up the instance
