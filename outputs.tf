@@ -46,8 +46,8 @@ output "web_url" {
   value       = "http://${oci_core_instance.main.public_ip}"
 }
 
-# Image output
-output "ubuntu_image_name" {
-  description = "Name of the Ubuntu image used"
-  value       = data.oci_core_images.ubuntu_arm.images[0].display_name
-}
+# # Image output
+# output "ubuntu_image_name" {
+#   description = "Name of the Ubuntu image used"
+#   value       = data.oci_core_images.ubuntu_arm.images[0].display_name
+# }
