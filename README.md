@@ -4,12 +4,25 @@ This repository contains Terraform code to deploy a single Ubuntu compute instan
 
 ## Architecture
 
-- **HCP Terraform** → Authenticates to **HCP Vault** via JWT tokens
+- **HCP Terraform** → Authenticates to **HCP Vault** via JWT/OIDC tokens
 - **HCP Vault** → Stores OCI credentials securely at `oci/terraform`
 - **Terraform** → Retrieves credentials at runtime (no static secrets)
-- **OCI** → Deploys Ubuntu instance on ARM-based A1.Flex shape (Free Tier)
+- **OCI** → Deploys Ubuntu instance (Free Tier)
 
-## Infrastructure Components
+## Current Working Environment
+
+✅ **Successfully Deployed Configuration**
+
+### Compute Instance
+- **Instance Type**: VM.Standard.E2.1.Micro (x86 architecture)
+- **Configuration**: 1 OCPU, 1GB RAM (Fixed - Free Tier)
+- **Region**: us-phoenix-1
+- **Availability Domain**: AD-3 (emiq:PHX-AD-3)
+- **OS**: Ubuntu 22.04 (x86_64)
+- **Storage**: 50GB boot volume
+- **Pre-installed**: Apache2 web server
+- **Status**: RUNNING ✓
+- **SSH Access**: Working ✓
 
 ### Networking
 - **VCN**: 10.0.0.0/16 CIDR block
@@ -17,31 +30,36 @@ This repository contains Terraform code to deploy a single Ubuntu compute instan
 - **Internet Gateway**: For public internet access
 - **Security List**: Allows SSH (22), HTTP (80), and HTTPS (443)
 
-### Compute
-- **Instance Type**: VM.Standard.A1.Flex (ARM architecture)
-- **Configuration**: 4 OCPUs, 24GB RAM (Free Tier)
-- **OS**: Ubuntu 22.04
-- **Storage**: 50GB boot volume
-- **Pre-installed**: Apache2, curl, git
+### Note on A1.Flex (ARM) Instances
+⚠️ **A1.Flex (ARM) instances are currently unavailable** due to capacity constraints in the Phoenix region. The A1.Flex shape (4 OCPUs, 24GB RAM ARM) offers better performance but has limited availability. Configuration files for A1.Flex are included as backups for future use.
 
 ## Prerequisites
 
-✅ HCP Vault Dedicated cluster configured with:
-- KV v2 secrets engine at `oci` path
-- OCI credentials stored at `oci/terraform`
-- JWT auth method enabled
-- JWT role `tfc-oci` configured for workspace
-- Policy `terraform-oci` with read access
+✅ **HCP Vault** (KV Cluster) configured with:
+- KV v2 secrets engine mounted at `oci` path
+- OCI credentials stored at `oci/terraform` with keys:
+  - `tenancy_ocid`, `user_ocid`, `fingerprint`, `private_key`
+  - `compartment_ocid`, `region`, `ssh_public_key`
+- JWT auth method enabled at `auth/jwt`
+- JWT role `terraform-oci` configured for workspace
+- Policy `terraform-oci` with read access to `oci/data/terraform`
 
-✅ HCP Terraform workspace "OCI" configured with environment variables:
-- `TFC_VAULT_BACKED_DYNAMIC_CREDENTIALS=true`
-- `TFC_VAULT_ADDR=https://tls-hashi-kv-public-vault-1caeb7d2.31341725.z1.hashicorp.cloud:8200`
-- `TFC_VAULT_NAMESPACE=admin`
-- `TFC_VAULT_RUN_ROLE=tfc-oci`
+✅ **HCP Terraform** workspace "OCI" configured with:
+- **Environment Variables** (required):
+  - `TFC_VAULT_PROVIDER_AUTH` = `true`
+  - `TFC_VAULT_ADDR` = `https://tls-hashi-kv-public-vault-1caeb7d2.31341725.z1.hashicorp.cloud:8200`
+  - `TFC_VAULT_NAMESPACE` = `admin`
+  - `TFC_VAULT_RUN_ROLE` = `terraform-oci`
 
-✅ OCI Account with API credentials stored in Vault
+✅ **OCI Account** (Free Tier)
+- API credentials configured
+- us-phoenix-1 region enabled
+- Compartment created
 
-✅ SSH public key at `~/.ssh/id_rsa.pub`
+✅ **Local Tools** (for manual testing):
+- Terraform CLI installed
+- Vault CLI installed (optional)
+- SSH key pair generated
 
 ## Deployment
 
@@ -114,13 +132,32 @@ The following outputs are available after deployment:
 
 ```
 .
-├── README.md           # This file
-├── versions.tf         # Terraform and provider versions
-├── vault.tf            # Vault provider and credential retrieval
-├── network.tf          # VCN, subnets, security, OCI provider
-├── compute.tf          # Compute instance configuration
-├── outputs.tf          # Output definitions
-└── .gitignore          # Git ignore rules
+├── README.md                           # This file
+├── versions.tf                         # Terraform and provider versions
+├── vault.tf                            # Vault provider (empty for dynamic credentials)
+├── network.tf                          # VCN, subnets, security, OCI provider
+├── compute.tf                          # Current: E2.1.Micro configuration
+├── outputs.tf                          # Output definitions
+├── variables.tf                        # Variable declarations (minimal)
+├── .gitignore                          # Git ignore rules
+│
+├── Setup & Configuration Files:
+├── terraform-oci-policy.hcl            # Vault policy for OCI credentials
+├── setup-vault-jwt-auth.sh             # Automated Vault setup script
+├── verify-vault-setup.sh               # Vault configuration verification
+├── jwt-role.json                       # JWT role configuration
+│
+├── Documentation:
+├── HCP-TERRAFORM-SETUP.md              # Workspace configuration guide
+├── TROUBLESHOOTING.md                  # Comprehensive troubleshooting
+├── WORKSPACE-VARIABLE-UPDATE.md        # Variable update instructions
+├── OCI-CAPACITY-SOLUTIONS.md           # Capacity issue solutions
+├── QUICK-CAPACITY-FIX.md               # Quick reference for capacity errors
+│
+└── Alternative Configurations:
+    ├── compute-e2-micro.tf.example     # E2.1.Micro template
+    ├── compute-e2-micro-working.tf.backup  # Working E2 backup
+    └── compute-a1-flex.tf.backup       # A1.Flex ARM template (4 OCPUs/24GB)
 ```
 
 ## Credential Management
@@ -142,25 +179,90 @@ vault kv put oci/terraform \
 
 No changes needed in Terraform code - credentials are fetched at runtime.
 
+## Initial Setup
+
+### 1. Configure Vault (One-time Setup)
+
+Run the automated setup script to configure Vault with JWT auth:
+
+```bash
+# Authenticate to Vault
+vault login
+
+# Run the setup script
+./setup-vault-jwt-auth.sh
+```
+
+This will:
+- Enable and configure JWT auth for HCP Terraform
+- Create the `terraform-oci` policy with read permissions
+- Create the `terraform-oci` JWT role with correct bound claims
+- Verify the configuration
+
+### 2. Verify Vault Configuration
+
+```bash
+./verify-vault-setup.sh
+```
+
+This checks all Vault components and confirms everything is configured correctly.
+
+### 3. Configure HCP Terraform Workspace
+
+Follow the instructions in `WORKSPACE-VARIABLE-UPDATE.md` to set the required environment variables.
+
+## Switching Between Configurations
+
+### Use E2.1.Micro (Current - Guaranteed Capacity)
+```bash
+cp compute-e2-micro-working.tf.backup compute.tf
+git commit -am "Use E2.1.Micro configuration"
+git push
+```
+
+### Try A1.Flex (When Capacity Available)
+```bash
+cp compute-a1-flex.tf.backup compute.tf
+git commit -am "Try A1.Flex ARM configuration"
+git push
+```
+
 ## Troubleshooting
 
-### "no vault token set on Client"
-- Verify all 4 environment variables are set in HCP Terraform workspace
-- Ensure variables are set as Environment variables, not Terraform variables
+### Vault Authentication Issues
 
-### "permission denied"
-- Check Vault policy allows reading `oci/data/terraform`
-- Verify JWT role `bound_claims` matches your organization and workspace
+**Error: "no vault token set on Client"**
+- Ensure `TFC_VAULT_PROVIDER_AUTH=true` is set as an **Environment variable**
+- Verify all 4 Vault-related environment variables are configured
+- Check that variables are Environment variables, NOT Terraform variables
+- See `WORKSPACE-VARIABLE-UPDATE.md` for detailed instructions
 
-### Instance not accessible via SSH
-- Check security list allows ingress on port 22
-- Verify SSH public key is correct in `~/.ssh/id_rsa.pub`
-- Wait 2-3 minutes for cloud-init to complete
+**Error: "permission denied"**
+- Run `./verify-vault-setup.sh` to check Vault configuration
+- Verify Vault policy allows reading `oci/data/terraform`
+- Check JWT role `bound_claims` matches your organization and workspace
+- Ensure JWT auth method is properly configured
 
-### A1.Flex shape not available
-- A1.Flex (ARM) is part of Always Free tier
-- Check regional availability
-- Fallback to E2.1.Micro if needed
+### OCI Capacity Issues
+
+**Error: "Out of host capacity"**
+- **Current Solution**: Using E2.1.Micro in AD-3 (working configuration)
+- **A1.Flex Availability**: Limited in Phoenix region, check other ADs or regions
+- **Quick Fix**: See `QUICK-CAPACITY-FIX.md` for immediate solutions
+- **Detailed Guide**: See `OCI-CAPACITY-SOLUTIONS.md` for comprehensive troubleshooting
+
+### Instance Access Issues
+
+**Cannot SSH to instance**
+- Verify security list allows ingress on port 22 from your IP
+- Check SSH public key is stored correctly in Vault at `oci/terraform`
+- Wait 2-3 minutes after deployment for cloud-init to complete
+- Use the `ssh_command` output for the correct connection string
+
+**Web server not accessible**
+- Verify security list allows HTTP (port 80)
+- Wait for cloud-init to complete (check with SSH)
+- Confirm Apache2 is running: `systemctl status apache2`
 
 ## Cost
 
