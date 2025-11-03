@@ -1,10 +1,10 @@
 # HCP Terraform Configuration
 terraform {
   cloud {
-    organization = "YOUR_ORG_NAME" # TODO: Replace with your HCP Terraform organization name
+    organization = "tls-hashi" # TODO: Replace with your HCP Terraform organization name
     
     workspaces {
-      name = "oci-infrastructure" # TODO: Update workspace name if different
+      name = "OCI" # TODO: Update workspace name if different
     }
   }
 
@@ -24,6 +24,7 @@ provider "oci" {
   private_key  = var.private_key
   region       = var.region
 }
+
 
 # Data sources
 data "oci_identity_availability_domains" "ads" {

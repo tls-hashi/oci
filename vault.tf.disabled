@@ -1,0 +1,24 @@
+# Vault provider configuration for HCP Vault
+# HCP Terraform will provide dynamic credentials automatically
+provider "vault" {
+  # Address will be set via VAULT_ADDR env var in HCP Terraform workspace
+  # or can be explicitly set here
+  address   = "https://tls-hashi-kv-public-vault-1caeb7d2.31341725.z1.hashicorp.cloud:8200"
+  namespace = "admin"
+  
+  # Authentication handled by HCP Terraform dynamic credentials
+  # No token needed when using HCP Terraform's native Vault integration
+}
+
+data "vault_kv_secret_v2" "oci" {
+  mount = "oci"
+  name  = "terraform"
+}
+
+locals {
+  oci_creds = data.vault_kv_secret_v2.oci.data
+  
+  # Extract individual values for easy reference
+  compartment_ocid = local.oci_creds.compartment_ocid
+  region           = local.oci_creds.region
+}
