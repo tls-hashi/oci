@@ -14,3 +14,13 @@ terraform.rc
 
 # OS
 .DS_Store
+
+# Vault credentials and diagnostic outputs
+*.tfvars.json
+vault-diag.sh
+*token*
+*.pem
+*.key
+
+# Documentation with potentially sensitive info
+| Variable Name | Value | Category | Sen.md

@@ -11,11 +11,11 @@ terraform {
   required_providers {
     oci = {
       source  = "oracle/oci"
-      version = "~> 6.24.0"
+      version = "~> 7.24.0"
     }
     vault = {
       source  = "hashicorp/vault"
-      version = "~> 4.5.0"
+      version = "~> 5.3.0"
     }
   }
 }
