@@ -4,3 +4,9 @@
 # - TFC_VAULT_ADDR
 # - TFC_VAULT_NAMESPACE
 # - TFC_VAULT_RUN_ROLE
+
+variable "instance_display_name" {
+  description = "Display name for the compute instance"
+  type        = string
+  default     = "ubuntu-a1-instance"
+}
