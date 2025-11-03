@@ -41,7 +41,7 @@ locals {
 resource "oci_core_instance" "main" {
   compartment_id      = local.compartment_ocid
   # Try AD-2 first (often has more capacity than AD-1)
-  availability_domain = data.oci_identity_availability_domains.ads.availability_domains[1].name
+  availability_domain = data.oci_identity_availability_domains.ads.availability_domains[2].name
   display_name        = "ubuntu-a1-instance"
   shape               = "VM.Standard.A1.Flex"
 
