@@ -70,9 +70,11 @@ Apply the policy:
 vault policy write terraform-oci terraform-oci-policy.hcl
 ```
 
-### Step 4: Configure JWT Auth Method for HCP Terraform
+### Step 4: Configure Authentication Method for HCP Terraform
 
-**Important:** HCP Terraform uses JWT (OIDC) authentication for dynamic credentials.
+**Option A: JWT Auth (Recommended for HCP Terraform)**
+
+HCP Terraform's native Dynamic Credentials feature uses JWT (OIDC) authentication.
 
 ```bash
 # Enable JWT auth method
@@ -99,6 +101,35 @@ vault write auth/jwt/role/tfc-oci \
 - Replace `OCI` with your workspace name
 - The `bound_claims` pattern allows any project within the organization
 - TTL of 20m is sufficient for most Terraform runs
+
+**Option B: AppRole Auth (Alternative Method)**
+
+If you prefer AppRole authentication instead of JWT:
+
+```bash
+# Enable AppRole auth
+vault auth enable approle
+
+# Create AppRole
+vault write auth/approle/role/terraform-oci \
+  token_policies="terraform-oci" \
+  token_ttl=20m \
+  token_max_ttl=30m
+
+# Get the Role ID
+vault read auth/approle/role/terraform-oci/role-id
+
+# Generate a Secret ID
+vault write -f auth/approle/role/terraform-oci/secret-id
+```
+
+Then set these environment variables in HCP Terraform:
+- `VAULT_ADDR` - Your Vault address
+- `VAULT_NAMESPACE` - `admin`
+- `VAULT_ROLE_ID` - The role-id from above
+- `VAULT_SECRET_ID` - The secret-id from above (mark as sensitive)
+
+**Note:** JWT/OIDC auth is recommended as it's more secure and doesn't require managing long-lived credentials.
 
 ### Step 5: Verify Vault Setup
 
