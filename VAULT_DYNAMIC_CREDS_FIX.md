@@ -2,28 +2,40 @@
 
 ## Issues Fixed
 
-### Issue 1: Vault Provider Configuration
-**Problem:** The Vault provider was explicitly configured with `address` and `namespace`, which prevented HCP Terraform's dynamic credentials from injecting authentication automatically.
+### Issue 1: Missing OCI Provider Block
+**Problem:** The OCI provider block was completely missing from `main.tf`, causing "did not find a proper configuration for tenancy" error.
 
-**Fix:** Removed explicit configuration to allow HCP Terraform to manage authentication via environment variables.
+**Fix:** Added OCI provider block that references credentials from Vault via locals.
+
+**Changed in:** `main.tf`
+
+```hcl
+# Added:
+provider "oci" {
+  tenancy_ocid = local.tenancy_ocid
+  user_ocid    = local.user_ocid
+  fingerprint  = local.fingerprint
+  private_key  = local.private_key
+  region       = local.region
+}
+```
+
+### Issue 2: Vault Provider Configuration
+**Problem:** The Vault provider needed explicit `address` and `namespace` configuration. HCP Terraform injects the authentication token, but the provider must know where to connect.
+
+**Fix:** Configured explicit address and namespace, while allowing HCP Terraform to inject the auth token automatically.
 
 **Changed in:** `vault.tf`
 
 ```hcl
-# Before (incorrect):
 provider "vault" {
   address   = "https://tls-hashi-kv-public-vault-1caeb7d2.31341725.z1.hashicorp.cloud:8200"
   namespace = "admin"
-}
-
-# After (correct):
-provider "vault" {
-  # Configuration automatically provided by HCP Terraform Dynamic Credentials
-  # via environment variables
+  # Token injected automatically by HCP Terraform dynamic credentials
 }
 ```
 
-### Issue 2: Region Variable Declaration
+### Issue 3: Region Variable Declaration
 **Problem:** The `region` variable was commented out in `variables.tf`, but `terraform.tfvars.example` still referenced it, causing a warning.
 
 **Fix:** Removed `region` from the example tfvars file since it's now sourced from Vault via `local.region`.
