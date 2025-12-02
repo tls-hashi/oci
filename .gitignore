@@ -24,3 +24,6 @@ vault-diag.sh
 
 # Documentation with potentially sensitive info
 | Variable Name | Value | Category | Sen.md
+
+# Claude AI Instructions (local only - do not commit)
+.claude-instructions
