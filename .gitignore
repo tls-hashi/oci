@@ -27,3 +27,10 @@ vault-diag.sh
 
 # Claude AI Instructions (local only - do not commit)
 .claude-instructions
+
+# Security scan results (local only - do not commit)
+security-scans/
+
+# Test credentials (for testing secret detection)
+# testcreds.txt
+test-vault-credentials.txt
