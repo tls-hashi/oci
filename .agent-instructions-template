@@ -1,0 +1,152 @@
+{
+  "_comment": "Agent instruction file template - optimized for token efficiency. This file provides a reusable structure for creating .agent-instructions files for any project.",
+  "_usage": "1. Copy this file to .agent-instructions in your project root. 2. Replace all UPPERCASE_PLACEHOLDER values with project-specific information. 3. Customize tasks based on project needs. 4. Remove these comment fields (_comment, _usage) from the final file.",
+
+  "project": {
+    "_comment": "Project metadata - helps agents understand context quickly without reading extensive documentation",
+    "schema_version": "1.0.0",
+    "name": "PROJECT_NAME",
+    "type": "PROJECT_TYPE",
+    "description": "BRIEF_PROJECT_DESCRIPTION",
+    "docs": {
+      "_comment": "Primary documentation references - agents will consult these for detailed information",
+      "primary": "README.md",
+      "setup": "SETUP_GUIDE.md",
+      "migration": "MIGRATION_GUIDE.md",
+      "additional": []
+    },
+    "metadata": {
+      "_comment": "Version requirements and platform information",
+      "version_requirements": {},
+      "platform": "TARGET_PLATFORM",
+      "language": "PRIMARY_LANGUAGE"
+    },
+    "security": {
+      "_comment": "Security policies and constraints - optional but recommended for infrastructure projects",
+      "policy": "SECURITY_POLICY_STATEMENT (e.g., least-privilege access, no hardcoded secrets)",
+      "prohibited_patterns": ["PATTERN_1", "PATTERN_2"],
+      "required_checks": ["CHECK_COMMAND_1", "CHECK_COMMAND_2"]
+    }
+  },
+
+  "state": {
+    "_comment": "Current project state - updated atomically by agents during task execution",
+    "last_updated": "ISO_TIMESTAMP",
+    "current_task": null,
+    "status": "active",
+    "error": null,
+    "context_summary": "ONE_SENTENCE_PROJECT_SUMMARY"
+  },
+
+  "tasks": [
+    {
+      "_comment": "Example task structure - use action-oriented descriptions, reference files instead of duplicating content",
+      "id": "task_001",
+      "description": "BRIEF_ACTION_ORIENTED_DESCRIPTION",
+      "status": "pending",
+      "priority": "medium",
+      "depends_on": [],
+      "context_files": [
+        "RELEVANT_FILE1",
+        "RELEVANT_FILE2"
+      ],
+      "notes": "ADDITIONAL_CONTEXT_OR_CONSTRAINTS",
+      "outputs": {},
+      "verification": {
+        "_comment": "Verification makes completion objective - specify command to validate task success",
+        "type": "cli",
+        "command": "VERIFICATION_COMMAND",
+        "expected": "EXPECTED_OUTCOME",
+        "success_criteria": "PASS_CONDITION"
+      }
+    },
+    {
+      "_comment": "Example task with dependency and outputs - will execute after task_001, outputs can reference task_001.outputs values",
+      "id": "task_002",
+      "description": "ANOTHER_TASK_DESCRIPTION",
+      "status": "pending",
+      "priority": "high",
+      "depends_on": ["task_001"],
+      "context_files": ["RELEVANT_FILE3"],
+      "notes": "This task depends on task_001 completing first",
+      "outputs": {
+        "_comment": "Populated on task completion with key-value pairs (e.g., resource_id, url, ip_address) for downstream tasks"
+      },
+      "verification": {
+        "type": "manual",
+        "command": "REVIEW_COMMAND",
+        "expected": "EXPECTED_RESULT",
+        "success_criteria": "MANUAL_APPROVAL"
+      }
+    }
+  ],
+
+  "token_management": {
+    "_comment": "Token optimization and fallback strategy - helps agents manage context efficiently and switch systems when needed",
+    "fallback_systems": [
+      {
+        "_comment": "Primary system - agents start here",
+        "name": "PRIMARY_SYSTEM_NAME",
+        "priority": 1,
+        "token_exhausted_patterns": [
+          "reached my usage limit",
+          "maximum context length",
+          "rate limit exceeded"
+        ]
+      },
+      {
+        "_comment": "Secondary system - fallback when primary exhausted",
+        "name": "SECONDARY_SYSTEM_NAME",
+        "priority": 2,
+        "token_exhausted_patterns": [
+          "context length exceeded",
+          "rate limit"
+        ]
+      }
+    ],
+    "strategy": "fuzzy detection with adaptive learning",
+    "current_system": "PRIMARY_SYSTEM_NAME",
+    "fallback_triggered": false,
+    "optimization": {
+      "_comment": "Token usage optimization settings",
+      "max_tokens_per_response": 4096,
+      "compression_strategy": "context_aware",
+      "file_reference_priority": true,
+      "token_usage_tracking": true
+    }
+  },
+
+  "instructions": {
+    "_comment": "Operational protocols for agents - defines how to update this file and handle errors",
+    "update_protocol": "Atomic JSON updates - read entire file, modify in memory, write to .agent-instructions.tmp, then atomic rename to .agent-instructions",
+    "error_handling": {
+      "_comment": "Error recovery strategy with retry logic",
+      "on_error": "Set state.error field and pause task processing",
+      "max_retries": 3,
+      "retry_strategy": "exponential_backoff"
+    },
+    "completion_criteria": "Tasks are complete only after verification step succeeds. Populate outputs field with any resource IDs or values for downstream tasks. Mark status as 'completed', update state.last_updated, then append task to .agent-tasks-completed.jsonl and remove from tasks array",
+    "task_archival": "On completion, append task as single-line JSON to .agent-tasks-completed.jsonl with completion timestamp, then remove from active tasks array",
+    "priority_levels": ["low", "medium", "high", "critical"],
+    "token_efficiency": {
+      "_comment": "Best practices for token-efficient operation",
+      "use_file_references": true,
+      "minimize_context_duplication": true,
+      "prefer_json_structure": true
+    }
+  },
+
+  "_best_practices": {
+    "_comment": "Guidelines for effective use of this template",
+    "task_descriptions": "Keep brief and action-oriented (e.g., 'Implement feature X' not 'We need to implement feature X')",
+    "context_files": "Reference files by path, don't duplicate content. Add line ranges for large files if needed.",
+    "dependencies": "Use depends_on to enforce task ordering. Keep dependency chains simple.",
+    "verification": "Always include verification - makes completion objective and automatable. Make verification commands specific (e.g., grep for absence of prohibited patterns)",
+    "outputs": "Populate outputs on task completion with resource IDs, URLs, or other values that downstream tasks need. Keeps .agent-instructions as single source of truth for task results.",
+    "task_archival": "Completed tasks are automatically archived to .agent-tasks-completed.jsonl and removed from active tasks array. This keeps .agent-instructions file small and token-efficient.",
+    "security": "For infrastructure projects, always define security block with prohibited patterns and required security checks. Agents should verify compliance before task completion.",
+    "priorities": "Distribute across levels - not everything can be 'critical'. Typical: 20% low, 50% medium, 25% high, 5% critical",
+    "context_summary": "Update this 1-sentence summary when project focus shifts significantly",
+    "schema_version": "Increment when making breaking changes to this structure"
+  }
+}

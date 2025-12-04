@@ -1,0 +1,183 @@
+{
+  "project": {
+    "schema_version": "1.0.0",
+    "name": "oci-infrastructure",
+    "type": "terraform",
+    "description": "OCI infrastructure managed via HCP Terraform with HashiCorp Boundary integration",
+    "docs": {
+      "primary": "README.md",
+      "setup": "HCP_TERRAFORM_SETUP.md",
+      "migration": "MIGRATION_GUIDE.md",
+      "modernization": "MODERNIZATION_SUMMARY.md"
+    },
+    "metadata": {
+      "terraform_version": ">= 1.5.0",
+      "oci_provider_version": ">= 5.0.0",
+      "platform": "HCP Terraform (Terraform Cloud)"
+    },
+    "security": {
+      "policy": "least-privilege access, no hardcoded secrets, boundary-only remote access",
+      "prohibited_patterns": ["port 22 ingress from 0.0.0.0/0", "hardcoded credentials", "public SSH keys"],
+      "required_checks": ["terraform validate", "tfsec"]
+    }
+  },
+  "state": {
+    "last_updated": "2025-12-03T17:30:00-08:00",
+    "current_task": null,
+    "status": "active",
+    "error": null,
+    "context_summary": "OCI infrastructure on HCP Terraform, 5 pending tasks focused on Boundary integration and governance"
+  },
+  "tasks": [
+    {
+      "id": "task_001",
+      "description": "Complete HashiCorp Boundary integration for secure access",
+      "status": "pending",
+      "priority": "high",
+      "depends_on": [],
+      "context_files": [
+        "modules/reverse_proxy/main.tf",
+        "modules/management/main.tf",
+        "HCP_TERRAFORM_SETUP.md"
+      ],
+      "notes": "Remove SSH dependencies and implement Boundary targets",
+      "outputs": {},
+      "verification": {
+        "type": "cli",
+        "command": "terraform plan -out=tfplan && terraform show tfplan | grep -v 'destination.*22'",
+        "expected": "No security rules with port 22",
+        "success_criteria": "exit_code == 0"
+      }
+    },
+    {
+      "id": "task_002",
+      "description": "Implement Sentinel policies for governance",
+      "status": "pending",
+      "priority": "medium",
+      "depends_on": ["task_001"],
+      "context_files": [
+        "main.tf",
+        "variables.tf"
+      ],
+      "notes": "Add policy-as-code for security and compliance",
+      "outputs": {},
+      "verification": {
+        "type": "cli",
+        "command": "terraform validate && tfsec .",
+        "expected": "All configurations valid, no security issues",
+        "success_criteria": "exit_code == 0"
+      }
+    },
+    {
+      "id": "task_003",
+      "description": "Set up multi-environment (dev/staging/prod)",
+      "status": "pending",
+      "priority": "medium",
+      "depends_on": ["task_002"],
+      "context_files": [
+        "variables.tf",
+        "network.tf"
+      ],
+      "notes": "Implement environment separation and promotion workflow",
+      "outputs": {},
+      "verification": {
+        "type": "cli",
+        "command": "terraform workspace list | grep -E '(dev|staging|prod)'",
+        "expected": "All three workspaces exist",
+        "success_criteria": "exit_code == 0 && count == 3"
+      }
+    },
+    {
+      "id": "task_004",
+      "description": "Create disaster recovery procedures",
+      "status": "pending",
+      "priority": "high",
+      "depends_on": [],
+      "context_files": [
+        "MODERNIZATION_SUMMARY.md",
+        "README.md"
+      ],
+      "notes": "Document backup and recovery processes",
+      "outputs": {},
+      "verification": {
+        "type": "manual",
+        "command": "Review DR documentation for backup procedures, recovery steps, and RTO/RPO definitions",
+        "expected": "DR procedures documented with runbooks",
+        "success_criteria": "Documentation review approved"
+      }
+    },
+    {
+      "id": "task_005",
+      "description": "Optimize costs and set up monitoring",
+      "status": "pending",
+      "priority": "medium",
+      "depends_on": ["task_003"],
+      "context_files": [
+        "main.tf",
+        "outputs.tf"
+      ],
+      "notes": "Implement cost tracking and alerting",
+      "outputs": {},
+      "verification": {
+        "type": "cli",
+        "command": "terraform output | grep -E '(cost|monitoring)'",
+        "expected": "Cost and monitoring outputs defined",
+        "success_criteria": "exit_code == 0"
+      }
+    }
+  ],
+  "token_management": {
+    "fallback_systems": [
+      {
+        "name": "primary",
+        "priority": 1,
+        "token_exhausted_patterns": [
+          "reached my usage limit",
+          "maximum context length",
+          "rate limit exceeded"
+        ]
+      },
+      {
+        "name": "system_secondary",
+        "priority": 2,
+        "token_exhausted_patterns": [
+          "context length exceeded",
+          "rate limit"
+        ]
+      },
+      {
+        "name": "system_tertiary",
+        "priority": 3,
+        "token_exhausted_patterns": [
+          "quota exceeded",
+          "too many requests"
+        ]
+      }
+    ],
+    "strategy": "fuzzy detection with adaptive learning",
+    "current_system": "primary",
+    "fallback_triggered": false,
+    "optimization": {
+      "max_tokens_per_response": 4096,
+      "compression_strategy": "context_aware",
+      "file_reference_priority": true,
+      "token_usage_tracking": true
+    }
+  },
+  "instructions": {
+    "update_protocol": "Atomic JSON updates - read entire file, modify in memory, write to .agent-instructions.tmp, then atomic rename to .agent-instructions",
+    "error_handling": {
+      "on_error": "Set state.error field and pause task processing",
+      "max_retries": 3,
+      "retry_strategy": "exponential_backoff"
+    },
+    "completion_criteria": "Tasks are complete only after verification step succeeds. Populate outputs field with any resource IDs or values for downstream tasks. Mark status as 'completed', update state.last_updated, then append task to .agent-tasks-completed.jsonl and remove from tasks array",
+    "task_archival": "On completion, append task as single-line JSON to .agent-tasks-completed.jsonl with completion timestamp, then remove from active tasks array",
+    "priority_levels": ["low", "medium", "high", "critical"],
+    "token_efficiency": {
+      "use_file_references": true,
+      "minimize_context_duplication": true,
+      "prefer_json_structure": true
+    }
+  }
+}
