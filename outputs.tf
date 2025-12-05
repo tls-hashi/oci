@@ -1,27 +1,20 @@
 # Instance outputs
-output "instance_id" {
-  description = "OCID of the compute instance"
-  value       = oci_core_instance.main.id
-}
-
-output "instance_public_ip" {
-  description = "Public IP address of the instance"
-  value       = oci_core_instance.main.public_ip
-}
-
-output "instance_private_ip" {
-  description = "Private IP address of the instance"
-  value       = oci_core_instance.main.private_ip
-}
-
-output "instance_state" {
-  description = "Current state of the instance"
-  value       = oci_core_instance.main.state
+output "instances" {
+  description = "Map of instance details by hostname"
+  value = {
+    for idx, instance in oci_core_instance.main :
+    local.instance_names[idx] => {
+      id         = instance.id
+      public_ip  = instance.public_ip
+      private_ip = instance.private_ip
+      state      = instance.state
+    }
+  }
 }
 
 output "availability_domain" {
-  description = "Availability domain where the instance is deployed"
-  value       = oci_core_instance.main.availability_domain
+  description = "Availability domain where the instances are deployed"
+  value       = oci_core_instance.main[0].availability_domain
 }
 
 # Network outputs
@@ -36,14 +29,20 @@ output "subnet_id" {
 }
 
 # Connection outputs
-output "ssh_command" {
-  description = "SSH command to connect to the instance"
-  value       = "ssh ubuntu@${oci_core_instance.main.public_ip}"
+output "ssh_commands" {
+  description = "SSH commands to connect to each instance"
+  value = {
+    for idx, instance in oci_core_instance.main :
+    local.instance_names[idx] => "ssh ubuntu@${instance.public_ip}"
+  }
 }
 
-output "web_url" {
-  description = "URL to access the web server"
-  value       = "http://${oci_core_instance.main.public_ip}"
+output "web_urls" {
+  description = "URLs to access the web servers"
+  value = {
+    for idx, instance in oci_core_instance.main :
+    local.instance_names[idx] => "http://${instance.public_ip}"
+  }
 }
 
 # # Image output

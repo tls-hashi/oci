@@ -1,0 +1,22 @@
+#cloud-config
+hostname: ${hostname}
+package_update: true
+package_upgrade: true
+packages:
+  - apache2
+runcmd:
+  - systemctl enable apache2
+  - systemctl start apache2
+  - echo '<h1>Welcome to OCI - ${hostname}</h1><p>Deployed via HCP Terraform + Vault (x86)</p>' > /var/www/html/index.html
+  - |
+    cat >> /etc/motd << 'MOTD_EOF'
+    ========================================
+    OCI Instance Information
+    ========================================
+    Hostname: $(hostname)
+    Public IP: $(curl -s http://169.254.169.254/opc/v1/vnics/ | grep -oP '"publicIp"\s*:\s*"\K[^"]+' | head -1)
+    Private IP: $(hostname -I | awk '{print $1}')
+    CPU Cores: $(nproc)
+    Memory: $(free -h | grep Mem | awk '{print $2}')
+    ========================================
+    MOTD_EOF

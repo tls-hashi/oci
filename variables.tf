@@ -5,8 +5,4 @@
 # - TFC_VAULT_NAMESPACE
 # - TFC_VAULT_RUN_ROLE
 
-variable "instance_display_name" {
-  description = "Display name for the compute instance (e.g., ocloud1, ocloud2)"
-  type        = string
-  default     = "ocloud1"
-}
+# Instance names are defined in compute.tf locals
