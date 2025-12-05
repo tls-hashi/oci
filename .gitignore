@@ -24,9 +24,13 @@ vault-diag.sh
 
 # Documentation with potentially sensitive info
 | Variable Name | Value | Category | Sen.md
+siteinfo.md
 
 # Claude AI Instructions (local only - do not commit)
 .claude-instructions
+.agent-instructions
+.agent-instructions-template
+.agent-tasks-completed.jsonl
 
 # Security scan results (local only - do not commit)
 security-scans/
@@ -37,3 +41,6 @@ test-vault-credentials.txt
 
 # Archived documentation with legacy configuration examples
 *.archived
+
+# Embedded git repositories
+2two2.me/
