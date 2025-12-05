@@ -27,9 +27,10 @@ data "oci_core_images" "ubuntu_x86" {
 # Cloud-init configuration
 locals {
   ssh_public_key = local.oci_creds.ssh_public_key
-  
+
   cloud_init = <<-EOF
     #cloud-config
+    hostname: ${var.instance_display_name}
     package_update: true
     package_upgrade: true
     packages:
@@ -38,6 +39,18 @@ locals {
       - systemctl enable apache2
       - systemctl start apache2
       - echo '<h1>Welcome to OCI</h1><p>Deployed via HCP Terraform + Vault (x86)</p>' > /var/www/html/index.html
+      - |
+        cat >> /etc/motd << 'MOTD_EOF'
+        ========================================
+        OCI Instance Information
+        ========================================
+        Hostname: $(hostname)
+        Public IP: $(curl -s http://169.254.169.254/opc/v1/vnics/ | grep -oP '"publicIp"\s*:\s*"\K[^"]+' | head -1)
+        Private IP: $(hostname -I | awk '{print $1}')
+        CPU Cores: $(nproc)
+        Memory: $(free -h | grep Mem | awk '{print $2}')
+        ========================================
+        MOTD_EOF
   EOF
 }
 
@@ -45,7 +58,7 @@ locals {
 resource "oci_core_instance" "main" {
   compartment_id      = local.compartment_ocid
   availability_domain = data.oci_identity_availability_domains.ads.availability_domains[2].name  # MUST be index 2 (AD-3)
-  display_name        = "ubuntu-instance"
+  display_name        = var.instance_display_name
   shape               = "VM.Standard.E2.1.Micro"
   
   # No shape_config needed for Micro instances - fixed size
@@ -59,7 +72,7 @@ resource "oci_core_instance" "main" {
   create_vnic_details {
     subnet_id        = oci_core_subnet.public.id
     assign_public_ip = true
-    hostname_label   = "ubuntu-instance"
+    hostname_label   = var.instance_display_name
   }
   
   metadata = {

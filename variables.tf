@@ -6,7 +6,7 @@
 # - TFC_VAULT_RUN_ROLE
 
 variable "instance_display_name" {
-  description = "Display name for the compute instance"
+  description = "Display name for the compute instance (e.g., ocloud1, ocloud2)"
   type        = string
-  default     = "ubuntu-a1-instance"
+  default     = "ocloud1"
 }

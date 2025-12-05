@@ -9,29 +9,24 @@ This repository contains Terraform code to deploy a single Ubuntu compute instan
 - **Terraform** → Retrieves credentials at runtime (no static secrets)
 - **OCI** → Deploys Ubuntu instance (Free Tier)
 
-## Current Working Environment
-
-✅ **Successfully Deployed Configuration**
+## Current Configuration
 
 ### Compute Instance
 - **Instance Type**: VM.Standard.E2.1.Micro (x86 architecture)
-- **Configuration**: 1 OCPU, 1GB RAM (Fixed - Free Tier)
+- **Resources**: 1 OCPU, 1GB RAM (Fixed - Free Tier)
 - **Region**: us-phoenix-1
 - **Availability Domain**: AD-3 (emiq:PHX-AD-3)
 - **OS**: Ubuntu 22.04 (x86_64)
 - **Storage**: 50GB boot volume
+- **Hostname**: ocloud1 (configurable via `instance_display_name` variable)
 - **Pre-installed**: Apache2 web server
-- **Status**: RUNNING ✓
-- **SSH Access**: Working ✓
+- **Login Message**: Displays IP addresses, hostname, and hardware resources
 
 ### Networking
 - **VCN**: 10.0.0.0/16 CIDR block
 - **Public Subnet**: 10.0.1.0/24
 - **Internet Gateway**: For public internet access
 - **Security List**: Allows SSH (22), HTTP (80), and HTTPS (443)
-
-### Note on A1.Flex (ARM) Instances
-⚠️ **A1.Flex (ARM) instances are currently unavailable** due to capacity constraints in the Phoenix region. The A1.Flex shape (4 OCPUs, 24GB RAM ARM) offers better performance but has limited availability. Configuration files for A1.Flex are included as backups for future use.
 
 ## Prerequisites
 
@@ -65,10 +60,10 @@ This repository contains Terraform code to deploy a single Ubuntu compute instan
 
 ### Automatic Deployment via HCP Terraform
 
-1. **Commit and push code to GitHub:**
+1. **Commit and push code to repository:**
    ```bash
-   git add versions.tf vault.tf network.tf compute.tf outputs.tf README.md
-   git commit -m "Deploy Ubuntu A1.Flex instance with Vault dynamic credentials"
+   git add .
+   git commit -m "Deploy OCI instance with Vault dynamic credentials"
    git push origin main
    ```
 
@@ -104,14 +99,20 @@ terraform apply
 
 ## Accessing the Instance
 
-After deployment, use the outputs to access your instance:
+After deployment, SSH to your instance to see system information:
 
 ```bash
-# Get the public IP from Terraform outputs
-# SSH to the instance
+# SSH to the instance (use output from HCP Terraform)
 ssh ubuntu@<instance_public_ip>
+```
 
-# Test the web server
+Upon login, you'll see a message displaying:
+- Hostname (ocloud1 by default)
+- Public and Private IP addresses
+- CPU cores and memory
+
+Test the web server:
+```bash
 curl http://<instance_public_ip>
 ```
 
@@ -134,30 +135,25 @@ The following outputs are available after deployment:
 .
 ├── README.md                           # This file
 ├── versions.tf                         # Terraform and provider versions
-├── vault.tf                            # Vault provider (empty for dynamic credentials)
+├── vault.tf                            # Vault provider configuration
 ├── network.tf                          # VCN, subnets, security, OCI provider
-├── compute.tf                          # Current: E2.1.Micro configuration
+├── compute.tf                          # E2.1.Micro instance configuration
 ├── outputs.tf                          # Output definitions
-├── variables.tf                        # Variable declarations (minimal)
+├── variables.tf                        # Variable declarations
 ├── .gitignore                          # Git ignore rules
 │
-├── Setup & Configuration Files:
+├── Setup & Configuration:
 ├── terraform-oci-policy.hcl            # Vault policy for OCI credentials
 ├── setup-vault-jwt-auth.sh             # Automated Vault setup script
 ├── verify-vault-setup.sh               # Vault configuration verification
 ├── jwt-role.json                       # JWT role configuration
+├── demo-credential-rotation.sh         # Credential rotation demonstration
 │
-├── Documentation:
-├── HCP-TERRAFORM-SETUP.md              # Workspace configuration guide
-├── TROUBLESHOOTING.md                  # Comprehensive troubleshooting
-├── WORKSPACE-VARIABLE-UPDATE.md        # Variable update instructions
-├── OCI-CAPACITY-SOLUTIONS.md           # Capacity issue solutions
-├── QUICK-CAPACITY-FIX.md               # Quick reference for capacity errors
-│
-└── Alternative Configurations:
-    ├── compute-e2-micro.tf.example     # E2.1.Micro template
-    ├── compute-e2-micro-working.tf.backup  # Working E2 backup
-    └── compute-a1-flex.tf.backup       # A1.Flex ARM template (4 OCPUs/24GB)
+└── Documentation:
+    ├── HCP-TERRAFORM-SETUP.md          # Workspace configuration guide
+    ├── TROUBLESHOOTING.md              # Comprehensive troubleshooting
+    ├── CREDENTIAL-ROTATION-DEMO.md     # Credential rotation guide
+    └── WORKSPACE-VARIABLE-UPDATE.md    # Variable update instructions
 ```
 
 ## Credential Management
@@ -211,20 +207,12 @@ This checks all Vault components and confirms everything is configured correctly
 
 Follow the instructions in `WORKSPACE-VARIABLE-UPDATE.md` to set the required environment variables.
 
-## Switching Between Configurations
+## Customizing Instance Hostname
 
-### Use E2.1.Micro (Current - Guaranteed Capacity)
-```bash
-cp compute-e2-micro-working.tf.backup compute.tf
-git commit -am "Use E2.1.Micro configuration"
-git push
-```
+To deploy with a different hostname (e.g., ocloud2), update the variable in HCP Terraform workspace or create a `terraform.tfvars` file:
 
-### Try A1.Flex (When Capacity Available)
-```bash
-cp compute-a1-flex.tf.backup compute.tf
-git commit -am "Try A1.Flex ARM configuration"
-git push
+```hcl
+instance_display_name = "ocloud2"
 ```
 
 ## Troubleshooting
@@ -246,10 +234,9 @@ git push
 ### OCI Capacity Issues
 
 **Error: "Out of host capacity"**
-- **Current Solution**: Using E2.1.Micro in AD-3 (working configuration)
-- **A1.Flex Availability**: Limited in Phoenix region, check other ADs or regions
-- **Quick Fix**: See `QUICK-CAPACITY-FIX.md` for immediate solutions
-- **Detailed Guide**: See `OCI-CAPACITY-SOLUTIONS.md` for comprehensive troubleshooting
+- **Current Solution**: Using E2.1.Micro in AD-3 (reliable availability)
+- Try different availability domains if capacity issues occur
+- See `TROUBLESHOOTING.md` for detailed guidance
 
 ### Instance Access Issues
 
@@ -267,11 +254,11 @@ git push
 ## Cost
 
 This deployment uses Oracle Cloud's **Always Free Tier** resources:
-- VM.Standard.A1.Flex: Up to 4 OCPUs and 24GB RAM (ARM)
+- VM.Standard.E2.1.Micro: 1 OCPU and 1GB RAM (x86)
 - 50GB boot volume
 - 10TB egress per month
 
-**Estimated cost: $0.00/month** (within Free Tier limits)
+**Cost: $0.00/month** (within Free Tier limits)
 
 ## Security Best Practices
 
